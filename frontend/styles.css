@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- nginx: можна зашити дефолтний URL бекенду (без слеша в кінці), інакше — поле в формі + localStorage -->
+    <meta name="catalog-api-base" content="" />
+    <title>Ops Lab Catalog</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="page">
+      <header class="header">
+        <h1 class="title">Ops Lab Catalog</h1>
+        <p class="subtitle">Каталог позицій · HTML/CSS фронт до REST API</p>
+      </header>
+
+      <section class="card panel" aria-labelledby="api-heading">
+        <h2 id="api-heading" class="card-title">Підключення до API</h2>
+        <p class="hint">
+          Якщо сторінка на <strong>іншій ВМ</strong>, ніж API — введіть базовий URL бекенду (без слеша в кінці), наприклад
+          <code>http://10.0.0.10:8000</code>.
+        </p>
+        <div class="row">
+          <label class="label" for="apiBase">Базовий URL API</label>
+          <input
+            id="apiBase"
+            class="input"
+            type="url"
+            placeholder="http://IP-бекенду:8000"
+            autocomplete="off"
+          />
+          <button type="button" id="saveApi" class="btn btn-secondary">Зберегти</button>
+        </div>
+      </section>
+
+      <section class="card panel" aria-labelledby="add-heading">
+        <h2 id="add-heading" class="card-title">Нова позиція</h2>
+        <form id="addForm" class="row row-tight">
+          <label class="label sr-only" for="itemName">Назва</label>
+          <input id="itemName" class="input input-grow" name="name" required maxlength="255" placeholder="Назва позиції" />
+          <button type="submit" class="btn btn-primary">Додати</button>
+        </form>
+      </section>
+
+      <section class="card panel" aria-labelledby="list-heading">
+        <div class="list-header">
+          <h2 id="list-heading" class="card-title">Список</h2>
+          <button type="button" id="refreshBtn" class="btn btn-ghost">Оновити</button>
+        </div>
+        <p id="status" class="status" role="status"></p>
+        <ul id="itemList" class="item-list"></ul>
+      </section>
+
+      <footer class="footer">
+        <a href="#" id="footerHealth" class="link" target="_blank" rel="noopener">/health</a>
+        <span class="dot">·</span>
+        <a href="#" id="footerReady" class="link" target="_blank" rel="noopener">/ready</a>
+      </footer>
+    </div>
+    <script src="app.js" defer></script>
+  </body>
+</html>
