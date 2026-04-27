@@ -10,4 +10,4 @@ __pycache__/
 *.tfvars
 *.tfstate
 *.tfstate.backup
-*.terraform.lock.hcl
+*.terraform*
