@@ -1,0 +1,70 @@
+#!/bin/bash
+set -euo pipefail
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update -y
+apt-get upgrade -y
+apt-get install -y nginx git
+
+if ! command -v git &>/dev/null; then
+  apt-get install -y git
+fi
+
+git clone https://github.com/Andriy29k/nebo-app.git
+cd nebo-app
+
+install -d /var/www/nebo-app
+cp -r frontend/* /var/www/nebo-app/
+
+cat >/etc/nginx/sites-available/nebo-app <<'NGINX'
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+    server_name _;
+
+    root /var/www/nebo-app;
+    index index.html;
+
+    location = /health {
+        proxy_pass http://${backend_ip}:8000;
+        proxy_http_version 1.1;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 60s;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location = /ready {
+        proxy_pass http://${backend_ip}:8000;
+        proxy_http_version 1.1;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 60s;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    location = /items {
+        proxy_pass http://${backend_ip}:8000;
+        proxy_http_version 1.1;
+        proxy_connect_timeout 5s;
+        proxy_read_timeout 60s;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}
+NGINX
+
+rm -f /etc/nginx/sites-enabled/default
+ln -sf /etc/nginx/sites-available/nebo-app /etc/nginx/sites-enabled/nebo-app
+
+nginx -t
+systemctl restart nginx
+systemctl enable nginx

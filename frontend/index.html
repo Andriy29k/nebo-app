@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- nginx: можна зашити дефолтний URL бекенду (без слеша в кінці), інакше — поле в формі + localStorage -->
+    <!-- Порожньо = той самий хост (nginx проксує /health, /ready, /items на бекенд). Інакше — повний базовий URL для dev. -->
     <meta name="catalog-api-base" content="" />
     <title>Ops Lab Catalog</title>
     <link rel="stylesheet" href="styles.css" />
@@ -18,19 +18,21 @@
       <section class="card panel" aria-labelledby="api-heading">
         <h2 id="api-heading" class="card-title">Підключення до API</h2>
         <p class="hint">
-          Якщо сторінка на <strong>іншій ВМ</strong>, ніж API — введіть базовий URL бекенду (без слеша в кінці), наприклад
-          <code>http://10.0.0.10:8000</code>.
+          У проді nginx на цій же адресі віддає фронт і проксує API на <code>/health</code>, <code>/ready</code>, <code>/items</code> —
+          поле залиште <strong>порожнім</strong> (браузер ходить на той самий <code>http://…</code>, без прямого IP бекенду).
+          Прямий бекенд лише для локальної розробки: <code>http://127.0.0.1:8000</code> (не <code>https://</code>, якщо Flask без TLS).
         </p>
         <div class="row">
-          <label class="label" for="apiBase">Базовий URL API</label>
+          <label class="label" for="apiBase">Базовий URL API (необов’язково)</label>
           <input
             id="apiBase"
             class="input"
             type="url"
-            placeholder="http://IP-бекенду:8000"
+            placeholder="порожньо = nginx на цьому сайті"
             autocomplete="off"
           />
           <button type="button" id="saveApi" class="btn btn-secondary">Зберегти</button>
+          <button type="button" id="resetApi" class="btn btn-ghost">Скинути до nginx</button>
         </div>
       </section>
 

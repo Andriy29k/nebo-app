@@ -57,13 +57,16 @@
       });
       setStatus(statusEl, "Завантажено позицій: " + data.length, "ok");
     } catch (e) {
-      setStatus(statusEl, "Помилка: " + e.message + ". Перевірте URL API та CORS на бекенді.", "error");
+      var hint =
+        " Перевірте: поле API порожнє (nginx), або http://… без https для прямого Flask; скиньте збережений URL кнопкою нижче.";
+      setStatus(statusEl, "Помилка: " + e.message + "." + hint, "error");
     }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
     var apiInput = document.getElementById("apiBase");
     var saveBtn = document.getElementById("saveApi");
+    var resetApiBtn = document.getElementById("resetApi");
     var form = document.getElementById("addForm");
     var itemName = document.getElementById("itemName");
     var refreshBtn = document.getElementById("refreshBtn");
@@ -81,6 +84,16 @@
       syncFooterLinks();
       fetchItems(statusEl, listEl);
     });
+
+    if (resetApiBtn) {
+      resetApiBtn.addEventListener("click", function () {
+        localStorage.removeItem(STORAGE_KEY);
+        apiInput.value = "";
+        setStatus(statusEl, "Використовується той самий хост (nginx → бекенд).", "ok");
+        syncFooterLinks();
+        fetchItems(statusEl, listEl);
+      });
+    }
 
     refreshBtn.addEventListener("click", function () {
       fetchItems(statusEl, listEl);

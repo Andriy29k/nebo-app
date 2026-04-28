@@ -1,0 +1,46 @@
+#!/bin/bash
+set -euo pipefail
+export DEBIAN_FRONTEND=noninteractive
+
+apt-get update -y
+apt-get upgrade -y
+apt-get install -y python3 python3-pip python3-venv git
+
+if ! command -v git &>/dev/null; then
+  apt-get install -y git
+fi
+
+git clone https://github.com/Andriy29k/nebo-app.git
+cd nebo-app
+
+python3 -m venv .venv
+./.venv/bin/pip install -r requirements.txt
+
+install -d /etc/nebo
+cat >/etc/nebo/backend.env <<EOF
+DATABASE_URL=${database_url}
+CORS_ORIGINS=${cors_origins}
+EOF
+chmod 600 /etc/nebo/backend.env
+
+cat >/etc/systemd/system/nebo-backend.service <<'UNIT'
+[Unit]
+Description=Nebo catalog backend (Flask)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/root/nebo-app
+EnvironmentFile=/etc/nebo/backend.env
+ExecStart=/root/nebo-app/.venv/bin/python3 /root/nebo-app/run.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable nebo-backend
+systemctl start nebo-backend
