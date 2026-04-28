@@ -1,8 +1,8 @@
 locals {
-  database_private_ip   = azurerm_network_interface.nebo-app-database-nic.private_ip_address
-  backend_private_ip    = azurerm_network_interface.nebo-app-backend-nic.private_ip_address
+  database_private_ip   = azurerm_network_interface.database-nic.private_ip_address
+  backend_private_ip    = azurerm_network_interface.backend-nic.private_ip_address
   database_url          = "mysql+pymysql://${urlencode(var.database_user)}:${urlencode(var.database_password)}@${local.database_private_ip}:3306/${urlencode(var.database_name)}"
-  cors_origins          = "http://${azurerm_public_ip.nebo-app-public-ip.ip_address}"
+  cors_origins          = "http://${azurerm_public_ip.frontend-public-ip.ip_address}"
 }
 
 resource "azurerm_linux_virtual_machine" "frontend-vm" {
@@ -13,7 +13,7 @@ resource "azurerm_linux_virtual_machine" "frontend-vm" {
   admin_username      = var.admin_username
 
   network_interface_ids = [
-    azurerm_network_interface.nebo-app-frontend-nic.id,
+    azurerm_network_interface.frontend-nic.id,
   ]
 
   admin_ssh_key {
@@ -38,7 +38,7 @@ resource "azurerm_linux_virtual_machine" "frontend-vm" {
   }))
 }
 
-resource "azurerm_network_interface" "nebo-app-frontend-nic" {
+resource "azurerm_network_interface" "frontend-nic" {
   name                = "${var.frontend_vm_name}-nic"
   location            = azurerm_resource_group.nebo-app-rg.location
   resource_group_name = azurerm_resource_group.nebo-app-rg.name
@@ -47,7 +47,7 @@ resource "azurerm_network_interface" "nebo-app-frontend-nic" {
     name                          = "${var.frontend_vm_name}-ipconfig"
     subnet_id                     = azurerm_subnet.public-subnet.id
     private_ip_address_allocation = "Dynamic"
-    public_ip_address_id          = azurerm_public_ip.nebo-app-public-ip.id
+    public_ip_address_id          = azurerm_public_ip.frontend-public-ip.id
   }
 }
 
@@ -58,8 +58,12 @@ resource "azurerm_linux_virtual_machine" "backend-vm" {
   size                = var.backend_vm_size
   admin_username      = var.admin_username
 
+  depends_on = [
+    azurerm_linux_virtual_machine.database-vm,
+  ]
+
   network_interface_ids = [
-    azurerm_network_interface.nebo-app-backend-nic.id,
+    azurerm_network_interface.backend-nic.id,
   ]
 
   admin_ssh_key {
@@ -85,7 +89,7 @@ resource "azurerm_linux_virtual_machine" "backend-vm" {
   }))
 }
 
-resource "azurerm_network_interface" "nebo-app-backend-nic" {
+resource "azurerm_network_interface" "backend-nic" {
   name                = "${var.backend_vm_name}-nic"
   location            = azurerm_resource_group.nebo-app-rg.location
   resource_group_name = azurerm_resource_group.nebo-app-rg.name
@@ -94,6 +98,7 @@ resource "azurerm_network_interface" "nebo-app-backend-nic" {
     name                          = "${var.backend_vm_name}-ipconfig"
     subnet_id                     = azurerm_subnet.private-subnet.id
     private_ip_address_allocation = "Dynamic"
+    # public_ip_address_id          = azurerm_public_ip.backend-public-ip.id
   }
 }
 
@@ -105,7 +110,7 @@ resource "azurerm_linux_virtual_machine" "database-vm" {
   admin_username      = var.admin_username
 
   network_interface_ids = [
-    azurerm_network_interface.nebo-app-database-nic.id,
+    azurerm_network_interface.database-nic.id,
   ]
 
   admin_ssh_key {
@@ -129,10 +134,11 @@ resource "azurerm_linux_virtual_machine" "database-vm" {
     database_name     = var.database_name
     database_user     = var.database_user
     database_password = var.database_password
+    init_sql_b64      = base64encode(file("../init.sql"))
   }))
 }
 
-resource "azurerm_network_interface" "nebo-app-database-nic" {
+resource "azurerm_network_interface" "database-nic" {
   name                = "${var.database_vm_name}-nic"
   location            = azurerm_resource_group.nebo-app-rg.location
   resource_group_name = azurerm_resource_group.nebo-app-rg.name
@@ -141,5 +147,6 @@ resource "azurerm_network_interface" "nebo-app-database-nic" {
     name                          = "${var.database_vm_name}-ipconfig"
     subnet_id                     = azurerm_subnet.private-subnet.id
     private_ip_address_allocation = "Dynamic"
+    # public_ip_address_id          = azurerm_public_ip.database-public-ip.id
   }
 }

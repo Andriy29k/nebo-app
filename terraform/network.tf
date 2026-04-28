@@ -24,7 +24,7 @@ resource "azurerm_subnet" "private-subnet" {
   address_prefixes     = [var.private_subnet_address_prefix]
 }
 
-resource "azurerm_public_ip" "nebo-app-public-ip" {
+resource "azurerm_public_ip" "frontend-public-ip" {
   name                = "${var.frontend_vm_name}-public-ip"
   location            = azurerm_resource_group.nebo-app-rg.location
   resource_group_name = azurerm_resource_group.nebo-app-rg.name
@@ -32,8 +32,24 @@ resource "azurerm_public_ip" "nebo-app-public-ip" {
   sku                 = "Standard"
 }
 
-resource "azurerm_network_security_group" "nebo-app-public-nsg" {
-  name                = "${var.vnet_name}-public-nsg"
+# resource "azurerm_public_ip" "database-public-ip" {
+#   name                = "${var.database_vm_name}-public-ip"
+#   location            = azurerm_resource_group.nebo-app-rg.location
+#   resource_group_name = azurerm_resource_group.nebo-app-rg.name
+#   allocation_method   = "Static"
+#   sku                 = "Standard"
+# }
+
+# resource "azurerm_public_ip" "backend-public-ip" {
+#   name                = "${var.backend_vm_name}-public-ip"
+#   location            = azurerm_resource_group.nebo-app-rg.location
+#   resource_group_name = azurerm_resource_group.nebo-app-rg.name
+#   allocation_method   = "Static"
+#   sku                 = "Standard"
+# }
+
+resource "azurerm_network_security_group" "frontend-nsg" {
+  name                = "${var.vnet_name}-frontend-nsg"
   location            = azurerm_resource_group.nebo-app-rg.location
   resource_group_name = azurerm_resource_group.nebo-app-rg.name
 
@@ -62,13 +78,13 @@ resource "azurerm_network_security_group" "nebo-app-public-nsg" {
   }
 }
 
-resource "azurerm_network_interface_security_group_association" "nebo-app-public-nic-nsg-association" {
-  network_interface_id      = azurerm_network_interface.nebo-app-frontend-nic.id
-  network_security_group_id = azurerm_network_security_group.nebo-app-public-nsg.id
+resource "azurerm_network_interface_security_group_association" "frontend-nic-nsg-association" {
+  network_interface_id      = azurerm_network_interface.frontend-nic.id
+  network_security_group_id = azurerm_network_security_group.frontend-nsg.id
 }
 
-resource "azurerm_network_security_group" "nebo-app-backend-nsg" {
-  name                = "${var.vnet_name}-private-nsg"
+resource "azurerm_network_security_group" "backend-nsg" {
+  name                = "${var.vnet_name}-backend-nsg"
   location            = azurerm_resource_group.nebo-app-rg.location
   resource_group_name = azurerm_resource_group.nebo-app-rg.name
 
@@ -98,13 +114,13 @@ resource "azurerm_network_security_group" "nebo-app-backend-nsg" {
 
 }
 
-resource "azurerm_network_interface_security_group_association" "nebo-app-backend-nic-nsg-association" {
-  network_interface_id      = azurerm_network_interface.nebo-app-backend-nic.id
-  network_security_group_id = azurerm_network_security_group.nebo-app-backend-nsg.id
+resource "azurerm_network_interface_security_group_association" "backend-nic-nsg-association" {
+  network_interface_id      = azurerm_network_interface.backend-nic.id
+  network_security_group_id = azurerm_network_security_group.backend-nsg.id
 }
 
 
-resource "azurerm_network_security_group" "nebo-app-database-nsg" {
+resource "azurerm_network_security_group" "database-nsg" {
   name                = "${var.vnet_name}-database-nsg"
   location            = azurerm_resource_group.nebo-app-rg.location
   resource_group_name = azurerm_resource_group.nebo-app-rg.name
@@ -135,7 +151,7 @@ resource "azurerm_network_security_group" "nebo-app-database-nsg" {
 
 }
 
-resource "azurerm_network_interface_security_group_association" "nebo-app-database-nic-nsg-association" {
-  network_interface_id      = azurerm_network_interface.nebo-app-database-nic.id
-  network_security_group_id = azurerm_network_security_group.nebo-app-database-nsg.id
+resource "azurerm_network_interface_security_group_association" "database-nic-nsg-association" {
+  network_interface_id      = azurerm_network_interface.database-nic.id
+  network_security_group_id = azurerm_network_security_group.database-nsg.id
 }
