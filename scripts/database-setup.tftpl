@@ -13,5 +13,9 @@ mysql -e "CREATE USER IF NOT EXISTS '${database_user}'@'%' IDENTIFIED BY '${data
 mysql -e "GRANT ALL PRIVILEGES ON \`${database_name}\`.* TO '${database_user}'@'%';"
 mysql -e "FLUSH PRIVILEGES;"
 
+echo "${init_sql_b64}" | base64 -d >/tmp/nebo-init.sql
+mysql '${database_name}' </tmp/nebo-init.sql
+rm -f /tmp/nebo-init.sql
+
 sed -i "s/.*bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mysql.conf.d/mysqld.cnf
 systemctl restart mysql
