@@ -10,7 +10,10 @@ DATABASE_URL = os.getenv(
 
 _connect_kw = {}
 if DATABASE_URL.startswith("mysql"):
-    _connect_kw["connect_args"] = {"charset": "utf8mb4"}
+    _connect_kw["connect_args"] = {
+        "charset": "utf8mb4",
+        "connect_timeout": 10,
+    }
 
 engine = create_engine(DATABASE_URL, pool_pre_ping=True, **_connect_kw)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

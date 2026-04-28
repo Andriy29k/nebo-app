@@ -3,8 +3,6 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- Порожньо = той самий хост (nginx проксує /health, /ready, /items на бекенд). Інакше — повний базовий URL для dev. -->
-    <meta name="catalog-api-base" content="" />
     <title>Ops Lab Catalog</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
@@ -14,27 +12,6 @@
         <h1 class="title">Ops Lab Catalog</h1>
         <p class="subtitle">Каталог позицій · HTML/CSS фронт до REST API</p>
       </header>
-
-      <section class="card panel" aria-labelledby="api-heading">
-        <h2 id="api-heading" class="card-title">Підключення до API</h2>
-        <p class="hint">
-          У проді nginx на цій же адресі віддає фронт і проксує API на <code>/health</code>, <code>/ready</code>, <code>/items</code> —
-          поле залиште <strong>порожнім</strong> (браузер ходить на той самий <code>http://…</code>, без прямого IP бекенду).
-          Прямий бекенд лише для локальної розробки: <code>http://127.0.0.1:8000</code> (не <code>https://</code>, якщо Flask без TLS).
-        </p>
-        <div class="row">
-          <label class="label" for="apiBase">Базовий URL API (необов’язково)</label>
-          <input
-            id="apiBase"
-            class="input"
-            type="url"
-            placeholder="порожньо = nginx на цьому сайті"
-            autocomplete="off"
-          />
-          <button type="button" id="saveApi" class="btn btn-secondary">Зберегти</button>
-          <button type="button" id="resetApi" class="btn btn-ghost">Скинути до nginx</button>
-        </div>
-      </section>
 
       <section class="card panel" aria-labelledby="add-heading">
         <h2 id="add-heading" class="card-title">Нова позиція</h2>

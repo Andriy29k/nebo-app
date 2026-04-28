@@ -1,17 +1,6 @@
 (function () {
-  const STORAGE_KEY = "catalog_api_base";
-
-  function metaApiBase() {
-    var el = document.querySelector('meta[name="catalog-api-base"]');
-    return el && el.getAttribute("content") ? el.getAttribute("content").trim() : "";
-  }
-
-  function getApiBase() {
-    var fromStorage = localStorage.getItem(STORAGE_KEY);
-    if (fromStorage) return fromStorage.replace(/\/$/, "");
-    var meta = metaApiBase();
-    if (meta) return meta.replace(/\/$/, "");
-    return window.location.origin;
+  function apiUrl(path) {
+    return window.location.origin.replace(/\/$/, "") + path;
   }
 
   function setStatus(el, text, kind) {
@@ -19,10 +8,6 @@
     el.classList.remove("is-error", "is-ok");
     if (kind === "error") el.classList.add("is-error");
     if (kind === "ok") el.classList.add("is-ok");
-  }
-
-  function apiUrl(path) {
-    return getApiBase() + path;
   }
 
   function syncFooterLinks() {
@@ -57,43 +42,26 @@
       });
       setStatus(statusEl, "Завантажено позицій: " + data.length, "ok");
     } catch (e) {
-      var hint =
-        " Перевірте: поле API порожнє (nginx), або http://… без https для прямого Flask; скиньте збережений URL кнопкою нижче.";
-      setStatus(statusEl, "Помилка: " + e.message + "." + hint, "error");
+      setStatus(
+        statusEl,
+        "Помилка: " + e.message + ". Перевірте nginx і бекенд на цьому ж хості.",
+        "error"
+      );
     }
   }
 
   document.addEventListener("DOMContentLoaded", function () {
-    var apiInput = document.getElementById("apiBase");
-    var saveBtn = document.getElementById("saveApi");
-    var resetApiBtn = document.getElementById("resetApi");
+    try {
+      localStorage.removeItem("catalog_api_base");
+    } catch (ignore) {}
+
     var form = document.getElementById("addForm");
     var itemName = document.getElementById("itemName");
     var refreshBtn = document.getElementById("refreshBtn");
     var statusEl = document.getElementById("status");
     var listEl = document.getElementById("itemList");
 
-    apiInput.value = localStorage.getItem(STORAGE_KEY) || metaApiBase() || "";
     syncFooterLinks();
-
-    saveBtn.addEventListener("click", function () {
-      var v = apiInput.value.trim().replace(/\/$/, "");
-      if (v) localStorage.setItem(STORAGE_KEY, v);
-      else localStorage.removeItem(STORAGE_KEY);
-      setStatus(statusEl, "URL збережено в цьому браузері.", "ok");
-      syncFooterLinks();
-      fetchItems(statusEl, listEl);
-    });
-
-    if (resetApiBtn) {
-      resetApiBtn.addEventListener("click", function () {
-        localStorage.removeItem(STORAGE_KEY);
-        apiInput.value = "";
-        setStatus(statusEl, "Використовується той самий хост (nginx → бекенд).", "ok");
-        syncFooterLinks();
-        fetchItems(statusEl, listEl);
-      });
-    }
 
     refreshBtn.addEventListener("click", function () {
       fetchItems(statusEl, listEl);

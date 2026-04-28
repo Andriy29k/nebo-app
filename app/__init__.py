@@ -37,6 +37,8 @@ def create_app() -> Flask:
         log.info("schema_checked_created_tables_if_missing")
     except SQLAlchemyError as e:
         log.warning("db_not_ready_at_startup: %s", e)
+    except Exception as e:
+        log.warning("db_not_ready_at_startup (non-sqlalchemy): %s", e, exc_info=True)
 
     @app.before_request
     def open_db():
