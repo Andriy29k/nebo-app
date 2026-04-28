@@ -3,7 +3,6 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
 apt-get update -y
-apt-get upgrade -y
 apt-get install -y mysql-server mysql-client
 
 systemctl start mysql
