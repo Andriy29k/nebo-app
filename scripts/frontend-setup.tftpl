@@ -10,11 +10,12 @@ if ! command -v git &>/dev/null; then
   apt-get install -y git
 fi
 
-git clone https://github.com/Andriy29k/nebo-app.git
-cd nebo-app
+INSTALL_ROOT=/opt/nebo-app
+rm -rf "$INSTALL_ROOT"
+git clone https://github.com/Andriy29k/nebo-app.git "$INSTALL_ROOT"
 
 install -d /var/www/nebo-app
-cp -r frontend/* /var/www/nebo-app/
+cp -r "$INSTALL_ROOT/frontend/"* /var/www/nebo-app/
 
 cat >/etc/nginx/sites-available/nebo-app <<'NGINX'
 server {

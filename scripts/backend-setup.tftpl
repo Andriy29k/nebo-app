@@ -10,8 +10,12 @@ if ! command -v git &>/dev/null; then
   apt-get install -y git
 fi
 
-git clone https://github.com/Andriy29k/nebo-app.git
-cd nebo-app
+# cloud-init не гарантує cwd=/root — без абсолютного шляху clone опиняється не там,
+# де очікує systemd (було WorkingDirectory=/root/nebo-app → сервіс падає, :8000 closed).
+INSTALL_ROOT=/opt/nebo-app
+rm -rf "$INSTALL_ROOT"
+git clone https://github.com/Andriy29k/nebo-app.git "$INSTALL_ROOT"
+cd "$INSTALL_ROOT"
 
 python3 -m venv .venv
 ./.venv/bin/pip install -r requirements.txt
@@ -31,9 +35,9 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/root/nebo-app
+WorkingDirectory=/opt/nebo-app
 EnvironmentFile=/etc/nebo/backend.env
-ExecStart=/root/nebo-app/.venv/bin/python3 /root/nebo-app/run.py
+ExecStart=/opt/nebo-app/.venv/bin/python3 /opt/nebo-app/run.py
 Restart=on-failure
 RestartSec=5
 
