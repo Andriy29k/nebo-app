@@ -4,7 +4,7 @@ import sys
 
 from flask import Flask, g, jsonify, request
 from flask_cors import CORS
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.exc import SQLAlchemyError
 
 from app.database import SessionLocal, engine
@@ -68,19 +68,25 @@ def create_app() -> Flask:
     @app.get("/ready")
     def ready():
         try:
-            db().execute(text("SELECT 1")).scalar_one()
+            db().scalar(text("SELECT 1"))
             return jsonify(ready=True)
         except SQLAlchemyError as e:
             log.error("ready_check_failed: %s", e)
+            return jsonify(detail="database_unavailable"), 503
+        except Exception:
+            log.exception("ready_check_failed_unexpected")
             return jsonify(detail="database_unavailable"), 503
 
     @app.get("/items")
     def list_items():
         try:
-            rows = db().query(Item).order_by(Item.id).all()
+            rows = db().scalars(select(Item).order_by(Item.id)).all()
             return jsonify([item_dict(r) for r in rows])
         except SQLAlchemyError as e:
             log.error("list_items_failed: %s", e)
+            return jsonify(detail="database_unavailable"), 503
+        except Exception:
+            log.exception("list_items_failed_unexpected")
             return jsonify(detail="database_unavailable"), 503
 
     @app.post("/items")
@@ -98,6 +104,10 @@ def create_app() -> Flask:
             return jsonify(item_dict(row)), 201
         except SQLAlchemyError as e:
             log.error("create_item_failed: %s", e)
+            db().rollback()
+            return jsonify(detail="database_unavailable"), 503
+        except Exception:
+            log.exception("create_item_failed_unexpected")
             db().rollback()
             return jsonify(detail="database_unavailable"), 503
 

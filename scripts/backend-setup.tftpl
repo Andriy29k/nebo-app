@@ -10,8 +10,6 @@ if ! command -v git &>/dev/null; then
   apt-get install -y git
 fi
 
-# cloud-init не гарантує cwd=/root — без абсолютного шляху clone опиняється не там,
-# де очікує systemd (було WorkingDirectory=/root/nebo-app → сервіс падає, :8000 closed).
 INSTALL_ROOT=/opt/nebo-app
 rm -rf "$INSTALL_ROOT"
 git clone https://github.com/Andriy29k/nebo-app.git "$INSTALL_ROOT"
@@ -37,7 +35,7 @@ Type=simple
 User=root
 WorkingDirectory=/opt/nebo-app
 EnvironmentFile=/etc/nebo/backend.env
-ExecStart=/opt/nebo-app/.venv/bin/python3 /opt/nebo-app/run.py
+ExecStart=/opt/nebo-app/.venv/bin/gunicorn --bind 0.0.0.0:8000 --workers 2 -k gthread --threads 4 --timeout 90 --access-logfile - --error-logfile - run:app
 Restart=on-failure
 RestartSec=5
 
