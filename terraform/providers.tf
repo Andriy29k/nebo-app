@@ -11,6 +11,14 @@ terraform {
       version = "3.7.2"
     }
   }
+
+  backend "azurerm" {
+    resource_group_name  = "state-file-rg"
+    storage_account_name = "neboappsa"
+    container_name       = "state-file"
+    key                  = "terraform.tfstate"
+  }
+
 }
 
 provider "azurerm" {

@@ -5,5 +5,5 @@ CREATE TABLE IF NOT EXISTS items (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO items (name) VALUES
-    ('Demo: кабель USB-C'),
-    ('Demo: нотатник Ops Lab');
+    ('USB-C'),
+    ('CD Disk');
